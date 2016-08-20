@@ -50,5 +50,10 @@ public class Bullet : MonoBehaviour {
             transform.position = offscreenHoldingArea;
             ((Enemy)coll.gameObject.GetComponent<Enemy>()).enemyHealth--;
         }
+        if(coll.gameObject.name.Contains("tt"))
+        {
+            transform.position = offscreenHoldingArea;
+            ((Turret)coll.gameObject.GetComponent<Turret>()).enemyHealth--;
+        }
     }
 }

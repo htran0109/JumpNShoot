@@ -10,6 +10,11 @@ public class Player : MonoBehaviour {
     private System.Collections.Generic.List<Bullet> bb;
     private int bbCount;
     private static int current = 0;
+    private static int health = 5;
+    public const int MAX_HEALTH = 5;
+    public const int HIT_INVINC = 200; //how long before player loses invincibility
+    public const int HIT_STUN = 100; // long before player can move again
+    private int hitStun = 50;
     public Vector3 offscreenHoldingArea = new Vector3(-100, -100, 0);
     public int bulletTimer = 0;
     public int bulletTimerThreshold = 20;
@@ -36,12 +41,15 @@ public class Player : MonoBehaviour {
     [HideInInspector]
     public bool grounded = false;
     private Rigidbody2D thisBody;
+    public GameManager manager;
     // Use this for initialization
     void Start()
     {
         _loadBullets();
+        health = MAX_HEALTH;
         thisBody = (Rigidbody2D)GameObject.Find("Player").GetComponent<Rigidbody2D>();
         camera = (GameCamera)GameObject.Find("Main Camera").GetComponent<GameCamera>();
+        manager = (GameManager)GameObject.Find("GameManager").GetComponent<GameManager>();
     }
 
     // Update is called once per frame
@@ -58,9 +66,24 @@ public class Player : MonoBehaviour {
             Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Enemy"), false);
 
         }
-        readKeys();
+        if (hitStun < HIT_STUN)
+        {
+            if (facingRight)
+            {
+                GetComponent<Rigidbody2D>().velocity = new Vector2(-3f, 0f);
+            }
+            else
+            {
+                GetComponent<Rigidbody2D>().velocity = new Vector2(3f, 0f);
+            }
+        }
+        else
+        {
+            readKeys();
+        }
         bulletTimer++;
         rollTimer--;
+        hitStun++;
 
     }
 
@@ -106,7 +129,7 @@ public class Player : MonoBehaviour {
         modelBullet.transform.position = offscreenHoldingArea;
         bb = new System.Collections.Generic.List<Bullet>();
 
-        for (int i = 0; i < 50; i++)
+        for (int i = 0; i < 20; i++)
         {
             GameObject newy = Instantiate(modelBullet.gameObject);
             newy.transform.parent = GameObject.Find("Bullets").transform;
@@ -193,15 +216,38 @@ public class Player : MonoBehaviour {
 
     void OnTriggerEnter2D(Collider2D coll)
     {
-        if (coll.gameObject.name.Contains("ee") && rollTimer < rollInvincThresh)
+        if (coll.gameObject.name.Contains("ee") && rollTimer < rollInvincThresh 
+                && hitStun > HIT_INVINC)
         {
-            transform.position = offscreenHoldingArea;
+            health--;
+            hitStun = 0;
+            GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);
+            if (health <= 0)
+            {
+                transform.position = offscreenHoldingArea;
+            }
+        }
+        if(coll.gameObject.name.Contains("TriggerWall1"))
+        {
+            manager.buildSecondLevel();
+            Destroy(coll.gameObject);
+        }
+        if(coll.gameObject.name.Contains("ss") && rollTimer < rollInvincThresh 
+                && hitStun > HIT_INVINC)
+        {
+            health--;
+            hitStun = 0;
+            GetComponent<Rigidbody2D>().velocity = new Vector2(0,0);
+            if (health <= 0) {
+                transform.position = offscreenHoldingArea;
+            }
         }
     }
 
     void OnBecameInvisible()
     {
-        camera.screenTransition(thisBody.velocity.x > 0);
+        camera.screenTransition(thisBody.velocity.x > 0); //move left or right 
+                                                          //depending on speed
     }
 
 

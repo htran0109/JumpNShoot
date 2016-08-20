@@ -4,15 +4,15 @@ using System.Collections;
 public class Enemy : MonoBehaviour
 {
 
-    public float enemySpeed = .2f;
+    public float enemySpeed = .1f;
     public Vector3 offscreenHoldingArea = new Vector3(-100, -100, 0);
     public int direction = 1; //1 = right, -1 = left
     public static int enemiesAlive;
     public Vector3 scaling = new Vector3(1f, 1f, 1f);
     public int enemyHealth;
     private Player player;
-    private bool enemyAlive = false;
-    private bool moving = false;
+    public bool enemyAlive = false;
+    public bool moving = false;
     // Use this for initialization
     void Start()
     {
@@ -39,10 +39,10 @@ public class Enemy : MonoBehaviour
         if(enemyHealth < 0 && enemyAlive)
         {
             transform.position = offscreenHoldingArea;
-            enemiesAlive--;
+            Enemy.enemiesAlive--;
             enemyAlive = false;
             moving = false;
-            Debug.Log("Enemy Died");
+            Debug.Log("Enemies Alive: " + Enemy.enemiesAlive);
         }
 
     }
@@ -68,7 +68,6 @@ public class Enemy : MonoBehaviour
 
         moving = true;
         enemyAlive = true;
-        enemiesAlive++;
         Debug.Log("Enemy Spawned" + enemiesAlive);
     }
 }
